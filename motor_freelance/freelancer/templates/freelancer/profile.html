@@ -1,0 +1,246 @@
+{% extends 'freelancer/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}My Profile | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>My Profile</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Account Summary</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="avatar rounded-circle bg-primary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                    <span class="text-white" style="font-size: 2.5rem;">{{ user.username.0|upper }}</span>
+                </div>
+                <h4>{{ profile.full_name|default:user.username }}</h4>
+                <p class="text-muted">Member since {{ user.date_joined|date:"F d, Y" }}</p>
+                <div class="mb-3">
+                    {% if profile.is_eligible %}
+                        <span class="badge bg-success">Eligible Freelancer</span>
+                    {% else %}
+                        <span class="badge bg-danger">Not Eligible</span>
+                    {% endif %}
+                </div>
+                <div class="earnings-display bg-light rounded p-3 mb-3">
+                    <h5>Total Earnings</h5>
+                    <h2 class="text-success mb-0">₹{{ profile.earnings }}</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Account Details</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <strong>Username</strong>
+                        <span>{{ user.username }}</span>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <strong>Email</strong>
+                        <span>{{ user.email }}</span>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <strong>Account Status</strong>
+                        <span>
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <strong>Eligibility Status</strong>
+                        <span>
+                            {% if profile.eligibility_completed %}
+                                {% if profile.is_eligible %}
+                                    <span class="badge bg-success">Eligible</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Not Eligible</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Not Completed</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                {% if profile.eligibility_completed %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Full Name</h6>
+                            <p>{{ profile.full_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Date of Birth</h6>
+                            <p>{{ profile.date_of_birth|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Gender</h6>
+                            <p>
+                                {% if profile.gender == 'M' %}Male
+                                {% elif profile.gender == 'F' %}Female
+                                {% elif profile.gender == 'O' %}Other
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Phone</h6>
+                            <p>{{ profile.phone }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Address</h6>
+                        <p>{{ profile.address }}</p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h6>Education</h6>
+                            <p>
+                                {% if profile.education == 'HIGH_SCHOOL' %}High School
+                                {% elif profile.education == 'DIPLOMA' %}Diploma
+                                {% elif profile.education == 'BACHELORS' %}Bachelor's Degree
+                                {% elif profile.education == 'MASTERS' %}Master's Degree
+                                {% elif profile.education == 'PHD' %}PhD
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>ID Proof</h6>
+                            <p>{{ profile.id_proof }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <h6>Certifications</h6>
+                        <div>
+                            {% for cert in profile.get_certifications %}
+                                <span class="badge bg-primary mb-1">
+                                    {% if cert == 'ASE_CERTIFIED' %}ASE Certified
+                                    {% elif cert == 'MOTOR_TECH_INSTITUTE' %}Motor Technology Institute
+                                    {% elif cert == 'VEHICLE_DESIGN_SCHOOL' %}Vehicle Design School
+                                    {% elif cert == 'AUTOMOTIVE_ENGINEERING' %}Automotive Engineering Certificate
+                                    {% elif cert == 'INDUSTRIAL_DESIGN' %}Industrial Design Certificate
+                                    {% endif %}
+                                </span>
+                            {% empty %}
+                                <span class="text-muted">No certifications added</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-edit fa-4x text-muted mb-3"></i>
+                        <h4>Profile Not Complete</h4>
+                        <p>You need to complete your eligibility form to view your profile details.</p>
+                        <a href="{% url 'freelancer:eligibility_form' %}" class="btn btn-primary">Complete Eligibility Form</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Work Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="p-3 rounded bg-light">
+                            <h2 class="text-primary">{{ user.submissions.all|length }}</h2>
+                            <p class="mb-0">Total Submissions</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="p-3 rounded bg-light">
+                            <h2 class="text-success">{{ user.submissions.filter|dictsortreversed:"status"|slice:":1"|length }}</h2>
+                            <p class="mb-0">Approved Works</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded bg-light">
+                            <h2 class="text-warning">{{ user.assigned_works.count }}</h2>
+                            <p class="mb-0">In Progress</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Earnings History</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Work Item</th>
+                                    <th>Submission Date</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in user.submissions.all|slice:":5" %}
+                                    <tr>
+                                        <td>{{ submission.work_item.title }}</td>
+                                        <td>{{ submission.submitted_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if submission.status == 'APPROVED' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif submission.status == 'PENDING' %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            {% elif submission.status == 'REJECTED' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if submission.status == 'APPROVED' %}
+                                                <span class="text-success">₹1000</span>
+                                            {% else %}
+                                                <span class="text-muted">--</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No submissions yet</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

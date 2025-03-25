@@ -1,0 +1,232 @@
+{% extends 'freelancer/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Available Work | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Available Work Items</h2>
+        <p class="text-muted">Select from the available work items below to start working</p>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Filter Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="ENGINE">Engine Design</option>
+                        <option value="CHASSIS">Chassis Design</option>
+                        <option value="INTERIOR">Interior Design</option>
+                        <option value="ELECTRICAL">Electrical Systems</option>
+                        <option value="BODY">Body Design</option>
+                        <option value="TESTING">Testing & Validation</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Priority</label>
+                    <select class="form-select" id="priority-filter">
+                        <option value="">All Priorities</option>
+                        <option value="3">High Priority</option>
+                        <option value="2">Medium Priority</option>
+                        <option value="1">Low Priority</option>
+                    </select>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">Expected Hours</label>
+                    <div class="d-flex align-items-center">
+                        <span>Min</span>
+                        <input type="range" class="form-range mx-2" id="hours-filter" min="0" max="50" value="0">
+                        <span>Max</span>
+                    </div>
+                    <div class="text-center" id="hours-value">Any hours</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        {% if works %}
+            <div class="row" id="work-items-container">
+                {% for work in works %}
+                    <div class="col-md-6 mb-3 work-item" 
+                         data-category="{{ work.category }}" 
+                         data-priority="{{ work.priority }}"
+                         data-hours="{{ work.expected_hours }}">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ work.title }}</h5>
+                                <span class="badge bg-secondary">{{ work.get_category_display }}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ work.description|truncatechars:100 }}</p>
+                                <div class="d-flex justify-content-between">
+                                    <span>
+                                        <i class="far fa-clock me-1"></i> {{ work.expected_hours }} hours
+                                    </span>
+                                    <span>
+                                        {% if work.priority == 3 %}
+                                            <span class="badge bg-danger">High Priority</span>
+                                        {% elif work.priority == 2 %}
+                                            <span class="badge bg-warning text-dark">Medium Priority</span>
+                                        {% else %}
+                                            <span class="badge bg-info text-dark">Low Priority</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white text-center">
+                                <a href="{% url 'freelancer:work_detail' work.slug %}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center py-4 d-none" id="no-results">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <p>No work items match your filter criteria.</p>
+                <button class="btn btn-outline-secondary btn-sm" id="reset-filters">Reset Filters</button>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
+                    <h4>No Available Work Items</h4>
+                    <p>There are currently no available work items. Please check back later.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Your Assigned Work</h5>
+            </div>
+            <div class="card-body">
+                {% if user_works %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Assignment Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for work in user_works %}
+                                    <tr>
+                                        <td>{{ work.title }}</td>
+                                        <td><span class="badge bg-secondary">{{ work.get_category_display }}</span></td>
+                                        <td>
+                                            {% if work.status == 'ASSIGNED' %}
+                                                <span class="badge bg-primary">{{ work.get_status_display }}</span>
+                                            {% elif work.status == 'COMPLETED' %}
+                                                <span class="badge bg-success">{{ work.get_status_display }}</span>
+                                            {% elif work.status == 'REVIEWED' %}
+                                                <span class="badge bg-info">{{ work.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ work.assignment_time|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{% url 'freelancer:work_detail' work.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+                                            {% if work.status == 'ASSIGNED' %}
+                                                <a href="{% url 'freelancer:work_submit' work.slug %}" class="btn btn-sm btn-success">Submit</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-center py-3">You don't have any assigned work items.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get filter elements
+        const categoryFilter = document.getElementById('category-filter');
+        const priorityFilter = document.getElementById('priority-filter');
+        const hoursFilter = document.getElementById('hours-filter');
+        const hoursValue = document.getElementById('hours-value');
+        const workItems = document.querySelectorAll('.work-item');
+        const noResults = document.getElementById('no-results');
+        const resetFilters = document.getElementById('reset-filters');
+        const workItemsContainer = document.getElementById('work-items-container');
+        
+        // Update hours filter value display
+        hoursFilter.addEventListener('input', function() {
+            const value = this.value;
+            hoursValue.textContent = value > 0 ? `${value} hours or less` : 'Any hours';
+        });
+        
+        // Apply filters function
+        function applyFilters() {
+            const category = categoryFilter.value;
+            const priority = priorityFilter.value;
+            const hours = hoursFilter.value;
+            
+            let visibleCount = 0;
+            
+            workItems.forEach(item => {
+                const itemCategory = item.dataset.category;
+                const itemPriority = item.dataset.priority;
+                const itemHours = parseInt(item.dataset.hours);
+                
+                const categoryMatch = !category || itemCategory === category;
+                const priorityMatch = !priority || itemPriority === priority;
+                const hoursMatch = hours === '0' || itemHours <= parseInt(hours);
+                
+                if (categoryMatch && priorityMatch && hoursMatch) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0 && workItems.length > 0) {
+                noResults.classList.remove('d-none');
+                workItemsContainer.classList.add('d-none');
+            } else {
+                noResults.classList.add('d-none');
+                workItemsContainer.classList.remove('d-none');
+            }
+        }
+        
+        // Add event listeners to filters
+        categoryFilter.addEventListener('change', applyFilters);
+        priorityFilter.addEventListener('change', applyFilters);
+        hoursFilter.addEventListener('input', applyFilters);
+        
+        // Reset filters
+        resetFilters.addEventListener('click', function() {
+            categoryFilter.value = '';
+            priorityFilter.value = '';
+            hoursFilter.value = '0';
+            hoursValue.textContent = 'Any hours';
+            applyFilters();
+        });
+    });
+</script>
+{% endblock %}

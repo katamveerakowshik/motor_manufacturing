@@ -1,0 +1,241 @@
+{% extends 'freelancer/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Dashboard | {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        transition: transform 0.3s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .work-item {
+        border-left: 4px solid #007bff;
+    }
+    .work-item.completed {
+        border-left-color: #28a745;
+    }
+    .work-item.pending {
+        border-left-color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Dashboard</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if profile %}
+        <p class="mb-0">
+            <strong>Total Earnings:</strong> 
+            <span class="badge bg-success fs-6">₹{{ profile.earnings }}</span>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+{% if not profile.eligibility_completed %}
+<div class="alert alert-warning" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    You need to complete your eligibility form before you can access work items.
+    <a href="{% url 'freelancer:eligibility_form' %}" class="btn btn-sm btn-warning ms-2">Complete Now</a>
+</div>
+{% elif not profile.is_eligible %}
+<div class="alert alert-danger" role="alert">
+    <i class="fas fa-times-circle me-2"></i>
+    You do not meet our eligibility criteria. Please contact support for more information.
+</div>
+{% endif %}
+
+<!-- Company Performance Stats -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Company Performance</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card stats-card text-center mb-3 mb-md-0">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ stats.vehicles_sold }}</h3>
+                        <p class="text-muted mb-0">Vehicles Sold</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center mb-3 mb-md-0">
+                    <div class="card-body">
+                        <h3 class="text-success">₹{{ stats.total_revenue|floatformat:0 }}</h3>
+                        <p class="text-muted mb-0">Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center mb-3 mb-md-0">
+                    <div class="card-body">
+                        <h3 class="text-info">{{ stats.production_rate }}</h3>
+                        <p class="text-muted mb-0">Production Rate</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning">{{ stats.customer_satisfaction }}/5</h3>
+                        <p class="text-muted mb-0">Customer Satisfaction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Available Work Items -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Available Work</h5>
+            </div>
+            <div class="card-body">
+                {% if profile.is_eligible %}
+                    {% if available_works %}
+                        <div class="list-group">
+                            {% for work in available_works %}
+                                <a href="{% url 'freelancer:work_detail' work.slug %}" class="list-group-item list-group-item-action work-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ work.title }}</h5>
+                                        <small class="text-muted">{{ work.expected_hours }} hrs</small>
+                                    </div>
+                                    <p class="mb-1 text-truncate">{{ work.description }}</p>
+                                    <small>
+                                        <span class="badge bg-secondary">{{ work.get_category_display }}</span>
+                                        {% if work.priority == 3 %}
+                                            <span class="badge bg-danger">High Priority</span>
+                                        {% elif work.priority == 2 %}
+                                            <span class="badge bg-warning text-dark">Medium Priority</span>
+                                        {% endif %}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        <div class="text-end mt-3">
+                            <a href="{% url 'freelancer:work_list' %}" class="btn btn-outline-primary btn-sm">View All</a>
+                        </div>
+                    {% else %}
+                        <p class="text-center py-3">No available work items at the moment.</p>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+                        <p>Complete your eligibility requirements to view available work.</p>
+                        {% if not profile.eligibility_completed %}
+                            <a href="{% url 'freelancer:eligibility_form' %}" class="btn btn-primary btn-sm">Complete Now</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Your Work Items -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Your Work Items</h5>
+            </div>
+            <div class="card-body">
+                {% if user_works %}
+                    <div class="list-group">
+                        {% for work in user_works %}
+                            <a href="{% url 'freelancer:work_detail' work.slug %}" class="list-group-item list-group-item-action work-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ work.title }}</h5>
+                                    <small class="
+                                        {% if work.status == 'ASSIGNED' %}text-primary
+                                        {% elif work.status == 'COMPLETED' %}text-success
+                                        {% elif work.status == 'REVIEWED' %}text-info{% endif %}
+                                    ">{{ work.get_status_display }}</small>
+                                </div>
+                                <p class="mb-1 text-truncate">{{ work.description }}</p>
+                                <small>
+                                    <span class="badge bg-secondary">{{ work.get_category_display }}</span>
+                                    <span class="text-muted">Assigned: {{ work.assignment_time|date:"M d, Y" }}</span>
+                                </small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center py-3">You haven't taken any work items yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Pending Submissions -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-hourglass-half me-2"></i>Pending Submissions</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_submissions %}
+                    <div class="list-group">
+                        {% for submission in pending_submissions %}
+                            <a href="{% url 'freelancer:work_detail' submission.work_item.slug %}" class="list-group-item list-group-item-action work-item pending">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ submission.work_item.title }}</h5>
+                                    <small class="text-muted">{{ submission.submitted_at|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1 text-truncate">{{ submission.notes }}</p>
+                                <small>
+                                    <span class="badge bg-warning text-dark">{{ submission.get_status_display }}</span>
+                                    <span class="text-muted">Hours: {{ submission.hours_spent }}</span>
+                                </small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center py-3">No pending submissions.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Completed Submissions -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Completed Submissions</h5>
+            </div>
+            <div class="card-body">
+                {% if completed_submissions %}
+                    <div class="list-group">
+                        {% for submission in completed_submissions %}
+                            <a href="{% url 'freelancer:work_detail' submission.work_item.slug %}" class="list-group-item list-group-item-action work-item completed">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ submission.work_item.title }}</h5>
+                                    <small class="text-muted">{{ submission.reviewed_at|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1 text-truncate">{{ submission.reviewer_comments }}</p>
+                                <small>
+                                    <span class="badge bg-success">{{ submission.get_status_display }}</span>
+                                    <span class="text-success">+₹1000</span>
+                                </small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center py-3">No completed submissions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

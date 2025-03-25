@@ -1,0 +1,213 @@
+{% extends 'freelancer/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ work.title }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ work.title }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'freelancer:work_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Work List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Work Item Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Category:</strong>
+                        <span class="badge bg-secondary">{{ work.get_category_display }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Status:</strong>
+                        {% if work.status == 'AVAILABLE' %}
+                            <span class="badge bg-success">Available</span>
+                        {% elif work.status == 'ASSIGNED' %}
+                            <span class="badge bg-primary">Assigned</span>
+                        {% elif work.status == 'COMPLETED' %}
+                            <span class="badge bg-info">Completed</span>
+                        {% elif work.status == 'REVIEWED' %}
+                            <span class="badge bg-dark">Reviewed</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Expected Hours:</strong> {{ work.expected_hours }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Description</h5>
+                    <p>{{ work.description }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h5>Requirements</h5>
+                    <p>{{ work.requirements }}</p>
+                </div>
+                
+                {% if work.status == 'AVAILABLE' and profile.is_eligible %}
+                    <form method="post" action="{% url 'freelancer:work_select' work.slug %}">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-briefcase me-1"></i> Take This Work
+                            </button>
+                        </div>
+                    </form>
+                {% elif work.status == 'ASSIGNED' and work.assigned_to == user %}
+                    <div class="alert alert-primary">
+                        <h5><i class="fas fa-info-circle me-2"></i>Work In Progress</h5>
+                        <p>You have taken this work item on {{ work.assignment_time|date:"F d, Y" }}. Once you have completed the work, submit it using the form below.</p>
+                    </div>
+                    
+                    <form method="post" action="{% url 'freelancer:work_submit' work.slug %}" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Work Notes</label>
+                            {{ form.notes|add_class:"form-control" }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.components_used.id_for_label }}" class="form-label">Components Used</label>
+                            {{ form.components_used|add_class:"form-control" }}
+                            <small class="text-muted">{{ form.components_used.help_text }}</small>
+                            {% if form.components_used.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.components_used.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.hours_spent.id_for_label }}" class="form-label">Hours Spent</label>
+                                {{ form.hours_spent|add_class:"form-control" }}
+                                <small class="text-muted">{{ form.hours_spent.help_text }}</small>
+                                {% if form.hours_spent.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.hours_spent.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.quality_check_passed.id_for_label }}" class="form-label">Quality Check</label>
+                                <div class="form-check mt-2">
+                                    {{ form.quality_check_passed|add_class:"form-check-input" }}
+                                    <label class="form-check-label" for="{{ form.quality_check_passed.id_for_label }}">
+                                        I confirm that the work meets quality standards
+                                    </label>
+                                </div>
+                                {% if form.quality_check_passed.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.quality_check_passed.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.design_attachments.id_for_label }}" class="form-label">Design Attachments</label>
+                            {{ form.design_attachments|add_class:"form-control" }}
+                            <small class="text-muted">{{ form.design_attachments.help_text }}</small>
+                            {% if form.design_attachments.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.design_attachments.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-1"></i> Submit Work
+                            </button>
+                        </div>
+                    </form>
+                {% elif work.status == 'COMPLETED' and work.assigned_to == user %}
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-clock me-2"></i>Under Review</h5>
+                        <p>Your work has been submitted and is currently under review. You'll be notified once the review is complete.</p>
+                    </div>
+                {% elif work.status == 'REVIEWED' and work.assigned_to == user %}
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle me-2"></i>Work Approved</h5>
+                        <p>This work has been reviewed and approved. 1000rs has been added to your earnings.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Work Item Information</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item">
+                    <small class="text-muted d-block">Created On</small>
+                    <strong>{{ work.created_at|date:"F d, Y" }}</strong>
+                </div>
+                <div class="list-group-item">
+                    <small class="text-muted d-block">Priority</small>
+                    {% if work.priority == 3 %}
+                        <span class="badge bg-danger">High Priority</span>
+                    {% elif work.priority == 2 %}
+                        <span class="badge bg-warning text-dark">Medium Priority</span>
+                    {% else %}
+                        <span class="badge bg-info text-dark">Low Priority</span>
+                    {% endif %}
+                </div>
+                {% if work.assigned_to %}
+                    <div class="list-group-item">
+                        <small class="text-muted d-block">Assigned To</small>
+                        {% if work.assigned_to == user %}
+                            <strong class="text-primary">You</strong>
+                        {% else %}
+                            <strong>{{ work.assigned_to.profile.full_name|default:work.assigned_to.username }}</strong>
+                        {% endif %}
+                    </div>
+                    <div class="list-group-item">
+                        <small class="text-muted d-block">Assignment Date</small>
+                        <strong>{{ work.assignment_time|date:"F d, Y" }}</strong>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Payment Information</h5>
+            </div>
+            <div class="card-body">
+                <p><i class="fas fa-money-bill-wave me-2 text-success"></i> Successful submission earns <strong>₹1000</strong></p>
+                <p class="mb-0"><i class="fas fa-info-circle me-2 text-primary"></i> Payment is processed after work review</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
