@@ -1,0 +1,46 @@
+{% extends 'freelancer/base.html' %}
+
+{% block title %}Welcome | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <h1 class="display-4">Welcome to Motor Manufacturing Freelancer Portal</h1>
+    <p class="lead">Join our team of qualified freelancers and contribute to innovative vehicle designs.</p>
+    <hr class="my-4">
+    <p>We offer flexible work opportunities for talented professionals in automotive design and engineering.</p>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary btn-lg" href="{% url 'freelancer:register' %}" role="button">Register Now</a>
+        <a class="btn btn-outline-primary btn-lg" href="{% url 'freelancer:login' %}" role="button">Login</a>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-4x mb-3 text-primary"></i>
+                <h3 class="card-title">Join Our Network</h3>
+                <p class="card-text">Connect with a global community of automotive design experts.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-drafting-compass fa-4x mb-3 text-primary"></i>
+                <h3 class="card-title">Work on Exciting Projects</h3>
+                <p class="card-text">Contribute to cutting-edge vehicle designs and technologies.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="fas fa-money-bill-wave fa-4x mb-3 text-primary"></i>
+                <h3 class="card-title">Earn Competitive Rates</h3>
+                <p class="card-text">Get paid for your expertise with transparent payment tracking.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

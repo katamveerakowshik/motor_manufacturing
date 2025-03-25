@@ -23,7 +23,7 @@ import json
 
 def home(request):
     """Landing page"""
-    return render(request, 'freelancer/base.html', {'title': 'Motor Manufacturing Freelancer Portal'})
+    return render(request, 'freelancer/home.html', {'title': 'Welcome to Motor Manufacturing Freelancer Portal'})
 
 def register(request):
     """User registration view"""
